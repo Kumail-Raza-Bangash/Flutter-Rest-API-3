@@ -1,7 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_rest_api_3/model/user.dart';
+import 'package:flutter_rest_api_3/services/user_api.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,19 +14,24 @@ class _HomePageState extends State<HomePage> {
   List<User> users = [];
 
   @override
+  void initState() {
+    super.initState();
+    fetchUsers();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Flutter Rest API 2"),
+        title: const Text("Flutter Rest API 3"),
       ),
-      floatingActionButton: FloatingActionButton(onPressed: fetchUsers),
       body: ListView.builder(
         itemCount: users.length,
         itemBuilder: (content, index){
           final user = users[index];
 
           return ListTile(
-            leading: Text(user.name.first),
+            leading: Text(user.fullName),
             trailing: Text(user.nat),
             title: Text(user.phone),
             subtitle: Text(user.email),
@@ -35,40 +40,13 @@ class _HomePageState extends State<HomePage> {
         ),
     );
   }
-
-  void fetchUsers() async {
-
-    print("FetchUser Called");
-
-    const url = 'https://randomuser.me/api/?results=100';
-    final uri = Uri.parse(url);
-    final response = await http.get(uri);
-    final body = response.body;
-    final json = jsonDecode(body);
-    final results = json['results'] as List<dynamic>;
-    
-    final transformed = results.map((e) {
-
-      final name = UserName(
-        first: e['name']['first'], 
-        title: e['name']['title'], 
-        last: e['name']['last']);
-
-        return User(
-          cell: e['cell'],
-          email: e['email'],
-          gender: e['gender'],
-          nat: e['nat'],
-          phone: e['phone'],
-          name: name,
-        );
-      }).toList();
-
+  
+  Future<void> fetchUsers() async{
+    final response = await UserApi.fetchUsers();
     setState(() {
-      users = transformed;
+      users = response;
     });
-
-    print("FetchUser Completed");
-
   }
+
+  
 }
